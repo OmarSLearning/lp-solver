@@ -18,7 +18,7 @@ from groq import Groq
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "mistral-saba-24b"
+MODEL = "llama-3.3-70b-versatile"
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
@@ -87,7 +87,6 @@ def _call_groq(prompt: str, system: str) -> str:
         ],
         temperature=0.0,
         max_tokens=1024,
-        response_format={"type": "json_object"},
     )
     return response.choices[0].message.content
 
