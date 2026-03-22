@@ -154,10 +154,3 @@ Ajouter `groq` dans `requirements.txt`.
 
 **Résultat attendu** : x1 = 40, x2 = 20, profit optimal = 280€
 
----
-
-## Roadmap
-
-- [ ] Phase 1 — PoC GitHub/Streamlit Cloud ← *vous êtes ici*
-- [ ] Phase 2 — AWS EC2 + FastAPI (sans Docker)
-- [ ] Phase 3 — AWS ECS + Docker (Fargate)
