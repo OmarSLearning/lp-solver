@@ -1,25 +1,26 @@
 """
-Agent LLM — extraction du modèle de programme linéaire via Ollama (mistral).
+Agent LLM — extraction du modèle de programme linéaire via Groq (Mistral).
 
 Deux modes supportés :
   - "text"  : l'utilisateur décrit le problème en langage naturel
   - "lp"    : l'utilisateur colle directement un bloc LP formaté
-              (min/max ... subject to ... bounds)
 
-Le LLM retourne toujours un JSON canonique validé avant transmission au solveur.
+Compatible Streamlit Cloud — utilise l'API Groq (pas d'Ollama local requis).
+La clé API est lue depuis st.secrets["GROQ_API_KEY"].
 """
 
 import json
 import re
-import requests
-from typing import Literal
+import streamlit as st
+from groq import Groq
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "mistral"
+MODEL = "mistral-saba-24b"
+
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 # Schéma JSON attendu en sortie du LLM
 LP_SCHEMA = """
@@ -73,47 +74,33 @@ Règles :
 """
 
 # ---------------------------------------------------------------------------
-# Fonctions principales
+# Fonctions internes
 # ---------------------------------------------------------------------------
 
-def _call_ollama(prompt: str, system: str) -> str:
-    """Appel brut à l'API Ollama. Retourne le texte généré."""
-    payload = {
-        "model": MODEL,
-        "system": system,
-        "prompt": prompt,
-        "stream": False,
-        "options": {
-            "temperature": 0.0,   # déterministe pour l'extraction structurée
-            "num_predict": 1024,
-        },
-    }
-    try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=120)
-        response.raise_for_status()
-        return response.json().get("response", "")
-    except requests.exceptions.ConnectionError:
-        raise ConnectionError(
-            "Impossible de joindre Ollama. "
-            "Vérifiez qu'il tourne avec : `ollama serve`"
-        )
-    except requests.exceptions.Timeout:
-        raise TimeoutError("Ollama n'a pas répondu dans les 120 secondes.")
+def _call_groq(prompt: str, system: str) -> str:
+    """Appel à l'API Groq. Retourne le texte généré."""
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.0,
+        max_tokens=1024,
+        response_format={"type": "json_object"},
+    )
+    return response.choices[0].message.content
 
 
 def _extract_json(raw: str) -> dict:
     """
     Extrait et parse le JSON depuis la réponse du LLM.
-    Robuste aux balises markdown résiduelles (```json ... ```).
+    Robuste aux balises markdown résiduelles.
     """
-    # Supprimer les balises markdown si présentes
     clean = re.sub(r"```(?:json)?", "", raw).replace("```", "").strip()
-
-    # Tenter un parse direct
     try:
         return json.loads(clean)
     except json.JSONDecodeError:
-        # Chercher le premier objet JSON dans le texte
         match = re.search(r"\{.*\}", clean, re.DOTALL)
         if match:
             return json.loads(match.group())
@@ -125,7 +112,6 @@ def _extract_json(raw: str) -> dict:
 
 def _validate_lp_model(model: dict) -> dict:
     """Validation minimale du schéma LP et normalisation."""
-    # Vérification des clés obligatoires
     for key in ("objective", "constraints", "variables"):
         if key not in model:
             raise ValueError(f"Clé manquante dans le modèle LP : '{key}'")
@@ -142,16 +128,14 @@ def _validate_lp_model(model: dict) -> dict:
     for i, c in enumerate(model["constraints"]):
         for key in ("coefficients", "sense", "rhs"):
             if key not in c:
-                raise ValueError(
-                    f"Contrainte {i} : clé manquante '{key}'."
-                )
+                raise ValueError(f"Contrainte {i} : clé manquante '{key}'.")
         if c["sense"] not in ("<=", ">=", "="):
             raise ValueError(
                 f"Contrainte {i} : sense invalide '{c['sense']}'. "
                 "Attendu : '<=', '>=' ou '='."
             )
 
-    # S'assurer que toutes les variables citées existent dans "variables"
+    # Auto-complétion des variables manquantes
     all_vars = set()
     for coef_dict in [obj["coefficients"]] + [c["coefficients"] for c in model["constraints"]]:
         all_vars.update(coef_dict.keys())
@@ -163,21 +147,19 @@ def _validate_lp_model(model: dict) -> dict:
     return model
 
 
+# ---------------------------------------------------------------------------
+# Fonctions publiques
+# ---------------------------------------------------------------------------
+
 def extract_lp_from_text(user_text: str) -> dict:
-    """
-    Mode 'text' : extrait un modèle LP depuis une description en langage naturel.
-    Retourne un dict validé conforme au schéma LP.
-    """
-    raw = _call_ollama(prompt=user_text, system=SYSTEM_PROMPT_TEXT)
+    """Mode 'text' : extrait un modèle LP depuis une description en langage naturel."""
+    raw = _call_groq(prompt=user_text, system=SYSTEM_PROMPT_TEXT)
     model = _extract_json(raw)
     return _validate_lp_model(model)
 
 
 def extract_lp_from_lp_format(lp_text: str) -> dict:
-    """
-    Mode 'lp' : parse un bloc LP formaté (style CPLEX/GLPK).
-    Retourne un dict validé conforme au schéma LP.
-    """
-    raw = _call_ollama(prompt=lp_text, system=SYSTEM_PROMPT_LP)
+    """Mode 'lp' : parse un bloc LP formaté (style CPLEX/GLPK)."""
+    raw = _call_groq(prompt=lp_text, system=SYSTEM_PROMPT_LP)
     model = _extract_json(raw)
     return _validate_lp_model(model)
