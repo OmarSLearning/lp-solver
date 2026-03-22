@@ -154,3 +154,7 @@ Ajouter `groq` dans `requirements.txt`.
 
 **Résultat attendu** : x1 = 40, x2 = 20, profit optimal = 280€
 
+## Licence
+
+Ce projet est sous licence [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).  
+Usage commercial interdit sans autorisation explicite de l'auteur.
