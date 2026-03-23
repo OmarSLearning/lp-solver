@@ -226,12 +226,31 @@ if solve_btn:
                     f'<div class="model-box">{result["model_lp"]}</div>',
                     unsafe_allow_html=True,
                 )
+
+        elif result["status"] == "Rejected":
+            st.markdown(
+                f'<div class="error-box">'
+                f'⛔ Problem rejected\n\n'
+                f'{result["error"]}'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+        elif result["status"] == "Timeout":
+            st.markdown(
+                f'<div class="error-box">'
+                f'⏱️ Solver timeout\n\n'
+                f'{result["error"]}'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
         else:
             st.markdown(
                 f'<div class="error-box">'
-                f'Statut : {result["status"]}\n'
-                f'Le problème n\'a pas de solution optimale.\n'
-                f'Vérifiez vos contraintes (infaisabilité ou non-bornitude possible).'
+                f'Status: {result["status"]}\n'
+                f'No optimal solution found.\n'
+                f'Check your constraints (infeasibility or unboundedness possible).'
                 f'</div>',
                 unsafe_allow_html=True,
             )
