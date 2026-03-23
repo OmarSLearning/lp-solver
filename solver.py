@@ -2,12 +2,22 @@
 Solveur PuLP — construit et résout un programme linéaire à partir du modèle
 JSON canonique produit par agent.py.
 
+Protections intégrées :
+  - Limite sur le nombre de variables et contraintes (anti-surcharge)
+  - Timeout CBC de 30 secondes (anti-blocage sur instances NP-difficiles)
+
 Retourne un dict de résultats structuré, indépendant de toute couche UI.
 """
 
 import pulp
-from typing import Any
 
+# ---------------------------------------------------------------------------
+# Limites de sécurité
+# ---------------------------------------------------------------------------
+
+MAX_VARIABLES = 50
+MAX_CONSTRAINTS = 100
+CBC_TIME_LIMIT = 30  # secondes
 
 # ---------------------------------------------------------------------------
 # Résolution
@@ -25,12 +35,34 @@ def solve(lp_model: dict) -> dict:
     Retourne
     --------
     dict avec les clés :
-        status          : str  — "Optimal", "Infeasible", "Unbounded", etc.
+        status          : str  — "Optimal", "Infeasible", "Unbounded", "Rejected", "Timeout"
         objective_value : float | None
         variables       : dict[str, float]
         is_optimal      : bool
         model_lp        : str  — représentation LP textuelle (debug)
+        error           : str | None — message d'erreur si rejeté
     """
+
+    # --- Vérification de la taille du problème ---
+    n_vars = len(lp_model["variables"])
+    n_constraints = len(lp_model["constraints"])
+
+    if n_vars > MAX_VARIABLES or n_constraints > MAX_CONSTRAINTS:
+        return {
+            "status": "Rejected",
+            "is_optimal": False,
+            "objective_value": None,
+            "variables": {},
+            "model_lp": "",
+            "objective_type": lp_model["objective"]["type"],
+            "error": (
+                f"Problem too large for this demo app "
+                f"({n_vars} variables, {n_constraints} constraints). "
+                f"Maximum allowed: {MAX_VARIABLES} variables and "
+                f"{MAX_CONSTRAINTS} constraints."
+            ),
+        }
+
     obj_cfg = lp_model["objective"]
     sense = (
         pulp.LpMinimize
@@ -69,14 +101,30 @@ def solve(lp_model: dict) -> dict:
             prob += (expr <= rhs), label
         elif sense_c == ">=":
             prob += (expr >= rhs), label
-        else:  # "="
+        else:
             prob += (expr == rhs), label
 
-    # --- Résolution (CBC solver, silencieux) ---
-    prob.solve(pulp.PULP_CBC_CMD(msg=0))
+    # --- Résolution avec timeout ---
+    prob.solve(pulp.PULP_CBC_CMD(msg=0, timeLimit=CBC_TIME_LIMIT))
 
     status = pulp.LpStatus[prob.status]
     is_optimal = prob.status == pulp.constants.LpStatusOptimal
+
+    # Détecter un timeout (CBC retourne status 0 = Not Solved)
+    if not is_optimal and prob.status == 0:
+        return {
+            "status": "Timeout",
+            "is_optimal": False,
+            "objective_value": None,
+            "variables": {},
+            "model_lp": str(prob),
+            "objective_type": obj_cfg["type"],
+            "error": (
+                f"The solver exceeded the time limit of {CBC_TIME_LIMIT} seconds. "
+                "Your problem may be too complex for this demo app. "
+                "Consider simplifying the model or reducing the number of integer variables."
+            ),
+        }
 
     obj_value = pulp.value(prob.objective) if is_optimal else None
     var_values = {
@@ -84,16 +132,14 @@ def solve(lp_model: dict) -> dict:
         for name, var in lp_vars.items()
     }
 
-    # Représentation LP textuelle pour debug/affichage
-    model_lp_str = str(prob)
-
     return {
         "status": status,
         "objective_value": obj_value,
         "variables": var_values,
         "is_optimal": is_optimal,
-        "model_lp": model_lp_str,
+        "model_lp": str(prob),
         "objective_type": obj_cfg["type"],
+        "error": None,
     }
 
 
@@ -104,17 +150,19 @@ def solve(lp_model: dict) -> dict:
 def format_results(result: dict) -> str:
     """Retourne une représentation texte propre des résultats."""
     lines = []
-    lines.append(f"Statut       : {result['status']}")
+    lines.append(f"Status       : {result['status']}")
 
     if result["is_optimal"]:
         obj_type = result.get("objective_type", "")
         lines.append(
-            f"Valeur optimale ({obj_type}) : {result['objective_value']:.6g}"
+            f"Optimal value ({obj_type}) : {result['objective_value']:.6g}"
         )
-        lines.append("\nVariables de décision :")
+        lines.append("\nDecision variables:")
         for var, val in result["variables"].items():
             lines.append(f"  {var} = {val:.6g}")
+    elif result["status"] in ("Rejected", "Timeout"):
+        lines.append(f"\n{result.get('error', 'No solution found.')}")
     else:
-        lines.append("Aucune solution optimale trouvée.")
+        lines.append("No optimal solution found.")
 
     return "\n".join(lines)
