@@ -136,7 +136,7 @@ with col2:
 
     st.markdown("---")
     st.markdown("**Modèle LLM**")
-    st.code("mistral", language=None)
+    st.code("llama-3.3-70b-versatile", language=None)
     st.markdown("**Solveur**")
     st.code("PuLP / CBC", language=None)
 
