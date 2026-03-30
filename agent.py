@@ -104,6 +104,12 @@ def _call_openrouter(prompt: str, system: str) -> str:
         # Supprimer le raisonnement interne de DeepSeek-R1
         content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
         return content
+    except requests.exceptions.HTTPError as e:
+        status_code = e.response.status_code if e.response is not None else "unknown"
+        body = e.response.text[:300] if e.response is not None else ""
+        raise ValueError(
+            f"OpenRouter a retourné une erreur HTTP {status_code}.\n{body}"
+        )
     except requests.exceptions.ConnectionError:
         raise ConnectionError("Impossible de joindre OpenRouter. Vérifiez votre connexion.")
     except requests.exceptions.Timeout:
