@@ -18,7 +18,7 @@ import streamlit as st
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "deepseek/deepseek-r1-distill-llama-70b:free"
+MODEL = "deepseek/deepseek-r1:free"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 LP_SCHEMA = """
