@@ -18,7 +18,7 @@ import streamlit as st
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "llama-3.3-70b-instruct:free"
+MODEL = "meta-llama/llama-3.3-70b-instruct"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 LP_SCHEMA = """
@@ -84,7 +84,7 @@ def _call_openrouter(prompt: str, system: str) -> str:
         "Authorization": f"Bearer {st.secrets['OPENROUTER_API_KEY']}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://lp-solver-souissi.streamlit.app",
-        "X-Title": "LP Solver",
+        "X-OpenRouter-Title": "LP Solver",
     }
     payload = {
         "model": MODEL,
@@ -94,6 +94,9 @@ def _call_openrouter(prompt: str, system: str) -> str:
         ],
         "temperature": 0.0,
         "max_tokens": 2048,
+        "provider": {
+            "sort": "throughput",
+        },
     }
     try:
         response = requests.post(
