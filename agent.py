@@ -18,7 +18,7 @@ import streamlit as st
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "openrouter/auto"
+MODEL = "llama-3.3-70b-instruct:free"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 LP_SCHEMA = """
