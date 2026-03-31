@@ -1,12 +1,13 @@
 """
-Agent LLM — extraction du modèle de programme linéaire via OpenRouter (DeepSeek-R1).
+Agent LLM — extraction du modèle MIP/LP via OpenRouter.
 
-Deux modes supportés :
-  - "text"  : l'utilisateur décrit le problème en langage naturel
-  - "lp"    : l'utilisateur colle directement un bloc LP formaté
+Supporte :
+  - Variables continues (LP)
+  - Variables entières (ILP)
+  - Variables binaires (BLP)
+  - Mixte continu + entier + binaire (MIP)
 
-Compatible Streamlit Cloud — utilise l'API OpenRouter (pas d'Ollama local requis).
-La clé API est lue depuis st.secrets["OPENROUTER_API_KEY"].
+Compatible Streamlit Cloud — clé API dans st.secrets["OPENROUTER_API_KEY"].
 """
 
 import json
@@ -36,14 +37,18 @@ LP_SCHEMA = """
     }
   ],
   "variables": {
-    "<var_name>": {"lb": <float|null>, "ub": <float|null>}
+    "<var_name>": {
+      "lb": <float|null>,
+      "ub": <float|null>,
+      "type": "continuous" | "integer" | "binary"
+    }
   }
 }
 """
 
-SYSTEM_PROMPT_TEXT = f"""Tu es un expert en optimisation linéaire (recherche opérationnelle).
+SYSTEM_PROMPT_TEXT = f"""Tu es un expert en optimisation linéaire et en programmation en nombres entiers (MIP).
 L'utilisateur te décrit un problème d'optimisation en langage naturel.
-Tu dois extraire le programme linéaire correspondant et retourner UNIQUEMENT un objet JSON valide,
+Tu dois extraire le programme linéaire/MIP correspondant et retourner UNIQUEMENT un objet JSON valide,
 sans aucun texte avant ou après, sans balises markdown, sans commentaires.
 
 Le JSON doit respecter strictement ce schéma :
@@ -51,14 +56,20 @@ Le JSON doit respecter strictement ce schéma :
 
 Règles importantes :
 - Toutes les variables doivent apparaître dans la section "variables".
+- Le champ "type" est obligatoire pour chaque variable :
+    * "continuous" : variable réelle (défaut si non précisé)
+    * "integer"    : variable entière (ex: nombre de machines, unités produites)
+    * "binary"     : variable 0/1 (ex: décision oui/non, sélection)
+- Pour les variables binaires : lb=0, ub=1 automatiquement.
 - lb=0 par défaut si non précisé (non-négativité standard).
 - ub=null si pas de borne supérieure.
-- Les coefficients absents dans une contrainte valent 0 (ne les inclure que s'ils sont non nuls).
-- "sense" doit être exactement "<=" , ">=" ou "=".
+- Détecte le type depuis le contexte : "nombre entier de produits" → integer,
+  "décision d'ouvrir ou non" → binary, "quantité" sans précision → continuous.
+- "sense" doit être exactement "<=", ">=" ou "=".
 """
 
-SYSTEM_PROMPT_LP = f"""Tu es un expert en optimisation linéaire.
-L'utilisateur te fournit un programme linéaire en format texte (style CPLEX LP ou similaire).
+SYSTEM_PROMPT_LP = f"""Tu es un expert en optimisation linéaire et MIP.
+L'utilisateur te fournit un programme linéaire/MIP en format texte (style CPLEX LP ou similaire).
 Tu dois le parser et retourner UNIQUEMENT un objet JSON valide,
 sans aucun texte avant ou après, sans balises markdown, sans commentaires.
 
@@ -66,8 +77,11 @@ Le JSON doit respecter strictement ce schéma :
 {LP_SCHEMA}
 
 Règles :
-- Interprète "min" / "minimize" → "minimize", "max" / "maximize" → "maximize".
-- Extrais toutes les variables, contraintes et bornes.
+- Interprète "min"/"minimize" → "minimize", "max"/"maximize" → "maximize".
+- Section "general" ou "int" dans le LP → type "integer".
+- Section "binary" ou "bin" dans le LP → type "binary".
+- Variables non listées dans ces sections → type "continuous".
+- Pour les variables binaires : lb=0, ub=1.
 - lb=0 par défaut si non précisé. ub=null si non borné supérieurement.
 """
 
@@ -76,10 +90,6 @@ Règles :
 # ---------------------------------------------------------------------------
 
 def _call_openrouter(prompt: str, system: str) -> str:
-    """
-    Appel à l'API OpenRouter (compatible OpenAI).
-    DeepSeek-R1 produit un bloc <think>...</think> avant la réponse — on le supprime.
-    """
     headers = {
         "Authorization": f"Bearer {st.secrets['OPENROUTER_API_KEY']}",
         "Content-Type": "application/json",
@@ -104,15 +114,12 @@ def _call_openrouter(prompt: str, system: str) -> str:
         )
         response.raise_for_status()
         content = response.json()["choices"][0]["message"]["content"]
-        # Supprimer le raisonnement interne de DeepSeek-R1
         content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
         return content
     except requests.exceptions.HTTPError as e:
         status_code = e.response.status_code if e.response is not None else "unknown"
         body = e.response.text[:300] if e.response is not None else ""
-        raise ValueError(
-            f"OpenRouter a retourné une erreur HTTP {status_code}.\n{body}"
-        )
+        raise ValueError(f"OpenRouter a retourné une erreur HTTP {status_code}.\n{body}")
     except requests.exceptions.ConnectionError:
         raise ConnectionError("Impossible de joindre OpenRouter. Vérifiez votre connexion.")
     except requests.exceptions.Timeout:
@@ -135,9 +142,10 @@ def _extract_json(raw: str) -> dict:
 
 
 def _validate_lp_model(model: dict) -> dict:
+    """Validation et normalisation du schéma MIP/LP."""
     for key in ("objective", "constraints", "variables"):
         if key not in model:
-            raise ValueError(f"Clé manquante dans le modèle LP : '{key}'")
+            raise ValueError(f"Clé manquante dans le modèle : '{key}'")
 
     obj = model["objective"]
     if obj.get("type") not in ("minimize", "maximize"):
@@ -152,12 +160,27 @@ def _validate_lp_model(model: dict) -> dict:
         if c["sense"] not in ("<=", ">=", "="):
             raise ValueError(f"Contrainte {i} : sense invalide '{c['sense']}'.")
 
+    # Auto-complétion des variables manquantes
     all_vars = set()
     for coef_dict in [obj["coefficients"]] + [c["coefficients"] for c in model["constraints"]]:
         all_vars.update(coef_dict.keys())
+
     for v in all_vars:
         if v not in model["variables"]:
-            model["variables"][v] = {"lb": 0, "ub": None}
+            model["variables"][v] = {"lb": 0, "ub": None, "type": "continuous"}
+
+    # Normalisation des types et bornes
+    VALID_TYPES = ("continuous", "integer", "binary")
+    for name, cfg in model["variables"].items():
+        # Type par défaut si absent
+        if "type" not in cfg:
+            cfg["type"] = "continuous"
+        if cfg["type"] not in VALID_TYPES:
+            cfg["type"] = "continuous"
+        # Bornes automatiques pour binaire
+        if cfg["type"] == "binary":
+            cfg["lb"] = 0
+            cfg["ub"] = 1
 
     return model
 
