@@ -90,16 +90,16 @@ with col1:
     else:
         user_input = st.text_area("Bloc LP/MIP", value="", height=200, placeholder=EXAMPLE_LP)
 
-with col2:
-    st.markdown("**Exemple MIP**")
-    if st.button("📋 Charger l'exemple", use_container_width=True):
-        st.session_state["example_loaded"] = EXAMPLE_TEXT if mode == "Texte naturel" else EXAMPLE_LP
-        st.rerun()
-    st.markdown("---")
-    st.markdown("**Types supportés**")
-    st.markdown('<span class="badge-continuous">Continue</span>', unsafe_allow_html=True)
-    st.markdown('<span class="badge-integer">Entière</span>', unsafe_allow_html=True)
-    st.markdown('<span class="badge-binary">Binaire 0/1</span>', unsafe_allow_html=True)
+#with col2:
+ #   st.markdown("**Exemple MIP**")
+  #  if st.button("📋 Charger l'exemple", use_container_width=True):
+   #     st.session_state["example_loaded"] = EXAMPLE_TEXT if mode == "Texte naturel" else EXAMPLE_LP
+    #    st.rerun()
+    #st.markdown("---")
+    #st.markdown("**Types supportés**")
+    #st.markdown('<span class="badge-continuous">Continue</span>', unsafe_allow_html=True)
+    #st.markdown('<span class="badge-integer">Entière</span>', unsafe_allow_html=True)
+    #st.markdown('<span class="badge-binary">Binaire 0/1</span>', unsafe_allow_html=True)
 
 if "example_loaded" in st.session_state:
     user_input = st.session_state.pop("example_loaded")
