@@ -101,6 +101,34 @@ Avant toute modélisation, analyse si le problème contient des non-linéarités
      w ≤ U·y,   w ≥ L·y,   w ≤ x - L(1-y),   w ≥ x - U(1-y)
 
 ════════════════════════════════════════════════════════
+ÉTAPE 1 — CONTRAINTES DE PROPORTION (OBLIGATOIRE)
+════════════════════════════════════════════════════════
+
+Quand un énoncé exprime une proportion/pourcentage d'un TOTAL, la variable
+du numérateur doit être comparée au TOTAL, pas au reste.
+
+Forme canonique :
+  "x représente au plus P% du total"
+  → x ≤ P% × (x + y + z + ...)
+  → développer algébriquement avant de coder les coefficients
+
+ERREUR FRÉQUENTE À ÉVITER :
+  ✗  x ≤ P% × y          (P% du complément — FAUX)
+  ✓  x ≤ P% × (x + y)    (P% du total     — CORRECT)
+
+Exemples de formulations déclenchant cette règle :
+  - "at most X% of [total] can be [type]"     → même règle
+  - "at least X% must be [type]"              → même règle, sense ≥
+  - "no more than X% of all [items] are [type]" → même règle
+  - "[type] cannot exceed X% of [total]"      → même règle
+
+Développement systématique OBLIGATOIRE avant d'écrire les coefficients :
+  x ≤ P × (x + y)
+  x - P·x - P·y ≤ 0
+  (1-P)·x - P·y ≤ 0
+  → coefficients : {{x: (1-P), y: -P}}, sense: "<=", rhs: 0
+
+════════════════════════════════════════════════════════
 RÈGLES GÉNÉRALES DU SCHÉMA JSON
 ════════════════════════════════════════════════════════
 
