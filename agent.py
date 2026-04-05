@@ -124,24 +124,20 @@ CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
 CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
-  Soit A = variable concernée par le pourcentage
-  Soit B, C, ... = toutes les autres variables
+  ÉTAPE 1 : Recopier littéralement la phrase de l'énoncé.
+  ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
+            "at least P% of trips must be by CAR" → A = variable des CAR
+            "at least P% of trips must be by BUS" → A = variable des BUS
+  ÉTAPE 3 : Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
+  ÉTAPE 4 : Développer terme à terme :
+            A - P·A - P·B - P·C - ... ≥ 0
+            (1-P)·A - P·B - P·C - ... ≥ 0
+  ÉTAPE 5 : Écrire les coefficients JSON :
+            → A reçoit (1-P), toutes les autres reçoivent -P
+            → sense: ">=", rhs: 0
+  ÉTAPE 6 : VÉRIFICATION — substituer les valeurs numériques et vérifier
+            que si A=P×total la contrainte est satisfaite à l'égalité.
 
-  Développement :
-  A ≥ P × (A + B + C + ...)
-  A - P·A - P·B - P·C - ... ≥ 0
-  (1-P)·A - P·B - P·C - ... ≥ 0
-
-  → A reçoit le coefficient (1-P)
-  → B, C, ... reçoivent chacun le coefficient -P
-  → sense: ">=" , rhs: 0
-
-VÉRIFICATION OBLIGATOIRE avant d'écrire le JSON :
-  - Lire la contrainte et identifier explicitement A : 
-    "X% of [total] must be [type]" → A = variable représentant [type]
-  - Le coefficient de A est-il (1-P) et non P ? Si non, corriger.
-  - Les coefficients de B, C, ... sont-ils -P et non -(1-P) ? Si non, corriger.
-  - A n'est pas nécessairement la première variable déclarée dans le modèle.
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
 ────────────────────────────────────────────────────────
