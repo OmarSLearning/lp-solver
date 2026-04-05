@@ -125,12 +125,12 @@ CAS 1 — "au plus P% du total" (at most / no more than)
 CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
   x ≥ P × (x + y + z + ...)
-  (1-P)·x - P·y - P·z - ... ≥ 0
-→ Identifier explicitement quelle variable est celle mentionnée dans la proportion
+(1-P)·x - P·y - P·z - ... ≥ 0
+  → Identifier explicitement quelle variable est celle mentionnée dans la proportion
   → Cette variable concernée reçoit (1-P)
   → Toutes les autres variables reçoivent -P
   → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
-  → coefficients : {{x: -(1-P), y: P, z: P, ...}}, sense: "<=", rhs: 0
+  → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: ">=", rhs: 0
 
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
