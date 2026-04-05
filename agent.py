@@ -136,9 +136,6 @@ Exemple concret P=0.3, trois variables (camions, voitures, motos) :
   → camions ≤ 0.3 × (camions + voitures + motos)
   → camions - 0.3·camions - 0.3·voitures - 0.3·motos ≤ 0
   → 0.7·camions - 0.3·voitures - 0.3·motos ≤ 0
-  → coefficient de camions  : 1 - 0.3 = 0.7   → POSITIF  ✓
-  → coefficient de voitures : -0.3             → NÉGATIF  ✓
-  → coefficient de motos    : -0.3             → NÉGATIF  ✓
   → JAMAIS : 0.3·camions - 0.7·voitures - 0.7·motos ≤ 0   ✗
 
 ════════════════════════════════════════════════════════
