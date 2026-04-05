@@ -103,40 +103,35 @@ Avant toute modélisation, analyse si le problème contient des non-linéarités
 ════════════════════════════════════════════════════════
 ÉTAPE 1 — CONTRAINTES DE PROPORTION (OBLIGATOIRE)
 ════════════════════════════════════════════════════════
-
 Quand un énoncé exprime une proportion/pourcentage d'un TOTAL, la variable
 du numérateur doit être comparée au TOTAL, pas au reste.
 
-Forme canonique :
-  "x représente au plus P% du total"
-  → x ≤ P% × (x + y + z + ...)
-  → développer algébriquement avant de coder les coefficients
+ERREUR FRÉQUENTE À ÉVITER (les deux cas) :
+  ✗  x ≤ P × y          (P% du complément — FAUX)
+  ✓  x ≤ P × (x + y)    (P% du total     — CORRECT)
 
-ERREUR FRÉQUENTE À ÉVITER :
-  ✗  x ≤ P% × y          (P% du complément — FAUX)
-  ✓  x ≤ P% × (x + y)    (P% du total     — CORRECT)
+────────────────────────────────────────────────────────
+CAS 1 — "au plus P% du total" (at most / no more than)
+────────────────────────────────────────────────────────
+  x ≤ P × (x + y + z + ...)
+  (1-P)·x - P·y - P·z - ... ≤ 0
+  → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: "<=", rhs: 0
 
-Exemples de formulations déclenchant cette règle :
-  - "at most X% of [total] can be [type]"     → même règle
-  - "at least X% must be [type]"              → même règle, sense ≥
-  - "no more than X% of all [items] are [type]" → même règle
-  - "[type] cannot exceed X% of [total]"      → même règle
+────────────────────────────────────────────────────────
+CAS 2 — "au moins P% du total" (at least / minimum)
+────────────────────────────────────────────────────────
+  x ≥ P × (x + y + z + ...)
+  (1-P)·x - P·y - P·z - ... ≥ 0
+  → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: ">=", rhs: 0
 
-Développement systématique OBLIGATOIRE avant d'écrire les coefficients :
-  x ≤ P × (x + y)
-  x ≤ P·x + P·y
-  x - P·x ≤ P·y
-  (1-P)·x - P·y ≤ 0
-  → coefficient de x : (1-P)   → POSITIF  car 1-P > 0 pour P < 1
-  → coefficient de y : -P      → NÉGATIF
-  → coefficients : {{x: (1-P), y: -P}}, sense: "<=", rhs: 0
-
-Exemple concret P=0.3, trois variables (camions, voitures, motos) :
-  "au plus 30% du total des véhicules peuvent être des camions"
-  → camions ≤ 0.3 × (camions + voitures + motos)
-  → camions - 0.3·camions - 0.3·voitures - 0.3·motos ≤ 0
-  → 0.7·camions - 0.3·voitures - 0.3·motos ≤ 0
-  → JAMAIS : 0.3·camions - 0.7·voitures - 0.7·motos ≤ 0   ✗
+────────────────────────────────────────────────────────
+Formulations déclenchant cette règle :
+────────────────────────────────────────────────────────
+  - "at most X% of [total] can be [type]"       → CAS 1, sense "<="
+  - "no more than X% of all [items] are [type]" → CAS 1, sense "<="
+  - "[type] cannot exceed X% of [total]"        → CAS 1, sense "<="
+  - "at least X% must be [type]"                → CAS 2, sense ">="
+  - "minimum X% of [total] should be [type]"    → CAS 2, sense ">="
 
 ════════════════════════════════════════════════════════
 RÈGLES GÉNÉRALES DU SCHÉMA JSON
