@@ -147,8 +147,8 @@ RÈGLES GÉNÉRALES DU SCHÉMA JSON
 - Contraintes d'égalité pour variables auxiliaires incluses dans "constraints".
 - "label" dans chaque contrainte est recommandé pour la lisibilité.
 - Pour toute contrainte de proportion, les coefficients doivent être ceux issus
-  du développement algébrique de x ≤ P×(x+y+...), jamais P appliqué à une
-  seule variable isolée. Vérifier systématiquement avant d'écrire le JSON.
+  du développement algébrique de x ≤ P×(x+y+...) pour une quantité au plus et x >= P×(x+y+...) pour une quantité au moins, 
+  jamais P appliqué à une seule variable isolée. Vérifier systématiquement avant d'écrire le JSON.
 """
 
 SYSTEM_PROMPT_LP = f"""Tu es un expert en optimisation linéaire et MIP.
