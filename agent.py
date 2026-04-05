@@ -115,6 +115,8 @@ CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
   x ≤ P × (x + y + z + ...)
   (1-P)·x - P·y - P·z - ... ≤ 0
+  → La variable concernée (celle limitée à P%) reçoit (1-P)
+  → Toutes les autres variables reçoivent -P
   → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: "<=", rhs: 0
 
 ────────────────────────────────────────────────────────
@@ -122,6 +124,8 @@ CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
   x ≥ P × (x + y + z + ...)
   (1-P)·x - P·y - P·z - ... ≥ 0
+  → La variable concernée (celle qui doit atteindre P%) reçoit (1-P)
+  → Toutes les autres variables reçoivent -P
   → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: ">=", rhs: 0
 
 ────────────────────────────────────────────────────────
@@ -147,8 +151,9 @@ RÈGLES GÉNÉRALES DU SCHÉMA JSON
 - Contraintes d'égalité pour variables auxiliaires incluses dans "constraints".
 - "label" dans chaque contrainte est recommandé pour la lisibilité.
 - Pour toute contrainte de proportion, les coefficients doivent être ceux issus
-  du développement algébrique de x ≤ P×(x+y+...) pour une quantité au plus et x >= P×(x+y+...) pour une quantité au moins, 
-  jamais P appliqué à une seule variable isolée. Vérifier systématiquement avant d'écrire le JSON.
+  du développement algébrique de x ≤ P×(x+y+...) pour une quantité au plus et x >= P×(x+y+...) pour une quantité au moins,
+  jamais P appliqué à une seule variable isolée. La variable concernée reçoit
+  toujours (1-P), toutes les autres reçoivent -P. Vérifier systématiquement avant d'écrire le JSON.
 """
 
 SYSTEM_PROMPT_LP = f"""Tu es un expert en optimisation linéaire et MIP.
