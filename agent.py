@@ -107,14 +107,21 @@ Quand un énoncé exprime une proportion/pourcentage d'un TOTAL, la variable
 du numérateur doit être comparée au TOTAL, pas au reste.
 
 ERREUR FRÉQUENTE À ÉVITER (les deux cas) :
+  At most
   ✗  A ≤ P × A          (P% du complément — FAUX)
   ✓  A ≤ P × (A + B)    (P% du total     — CORRECT)
+  At least
+  ✗  A ≥ P × A          (P% du complément — FAUX)
+  ✓  A ≥ P × (A + B)    (P% du total     — CORRECT)
+
 
 ────────────────────────────────────────────────────────
 CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
   A ≤ P × (A + B + C + ...)
   (1-P)·A - P·B - P·C - ... ≤ 0
+  B ≤ P × (A + B + C + ...)
+  (1-P)·B - P·A - P·C - ... ≤ 0
 → Identifier explicitement quelle variable est celle mentionnée dans la proportion
   → Cette variable concernée reçoit (1-P)
   → Toutes les autres variables reçoivent -P
