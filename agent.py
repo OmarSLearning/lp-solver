@@ -130,7 +130,7 @@ CAS 2 — "au moins P% du total" (at least / minimum)
   → Cette variable concernée reçoit (1-P)
   → Toutes les autres variables reçoivent -P
   → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
-  → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: "<=", rhs: 0
+  → coefficients : {{x: -(1-P), y: P, z: P, ...}}, sense: "<=", rhs: 0
 
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
