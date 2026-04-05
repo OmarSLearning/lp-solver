@@ -131,21 +131,15 @@ CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
 CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
-  ÉTAPE 1 : Recopier littéralement la phrase de l'énoncé.
-  ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
-            "[type] must represent at least P% of [total]" → A = variable représentant [type]
-            → Rechercher dans "variables" le nom exact associé à [type],
-              indépendamment de son ordre de déclaration (A, B, C, ...).
-              A peut être x, y, ou toute autre variable du modèle.
-  ÉTAPE 3 : Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
-  ÉTAPE 4 : Développer terme à terme :
-            A - P·A - P·B - P·C - ... ≥ 0
-            (1-P)·A - P·B - P·C - ... ≥ 0
-  ÉTAPE 5 : Écrire les coefficients JSON :
-            → A reçoit (1-P), toutes les autres reçoivent -P
-            → sense: ">=", rhs: 0
-  ÉTAPE 6 : VÉRIFICATION — substituer les valeurs numériques et vérifier
-            que si A=P×total la contrainte est satisfaite à l'égalité.
+  A >= P × (A + B + C + ...)
+  (1-P)·A - P·B - P·C - ... >= 0
+  B >= P × (A + B + C + ...)
+  (1-P)·B - P·A - P·C - ... >= 0
+→ Identifier explicitement quelle variable est celle mentionnée dans la proportion
+  → Cette variable concernée reçoit (1-P)
+  → Toutes les autres variables reçoivent -P
+  → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
+  → coefficients : {{A: (1-P), B: -P, C: -P, ...}}, sense: ">=", rhs: 0
 
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
