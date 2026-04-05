@@ -136,10 +136,12 @@ CAS 2 — "au moins P% du total" (at least / minimum)
   → B, C, ... reçoivent chacun le coefficient -P
   → sense: ">=" , rhs: 0
 
-  VÉRIFICATION OBLIGATOIRE avant d'écrire le JSON :
-  - Ai-je bien identifié A (variable mentionnée dans la proportion) ?
-  - Le coefficient de A est-il (1-P) et non P ?
-  - Les coefficients de B, C, ... sont-ils -P et non -(1-P) ?
+VÉRIFICATION OBLIGATOIRE avant d'écrire le JSON :
+  - Lire la contrainte et identifier explicitement A : 
+    "X% of [total] must be [type]" → A = variable représentant [type]
+  - Le coefficient de A est-il (1-P) et non P ? Si non, corriger.
+  - Les coefficients de B, C, ... sont-ils -P et non -(1-P) ? Si non, corriger.
+  - A n'est pas nécessairement la première variable déclarée dans le modèle.
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
 ────────────────────────────────────────────────────────
