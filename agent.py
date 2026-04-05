@@ -124,9 +124,22 @@ Exemples de formulations déclenchant cette règle :
 
 Développement systématique OBLIGATOIRE avant d'écrire les coefficients :
   x ≤ P × (x + y)
-  x - P·x - P·y ≤ 0
+  x ≤ P·x + P·y
+  x - P·x ≤ P·y
   (1-P)·x - P·y ≤ 0
-  → coefficients : {{x: (1-P), y: -P}}, sense: "<=", rhs: 0
+  → coefficient de x : (1-P)   → POSITIF  car 1-P > 0 pour P < 1
+  → coefficient de y : -P      → NÉGATIF
+  → coefficients : {x: (1-P), y: -P}, sense: "<=", rhs: 0
+
+Exemple concret P=0.3, trois variables (camions, voitures, motos) :
+  "au plus 30% du total des véhicules peuvent être des camions"
+  → camions ≤ 0.3 × (camions + voitures + motos)
+  → camions - 0.3·camions - 0.3·voitures - 0.3·motos ≤ 0
+  → 0.7·camions - 0.3·voitures - 0.3·motos ≤ 0
+  → coefficient de camions  : 1 - 0.3 = 0.7   → POSITIF  ✓
+  → coefficient de voitures : -0.3             → NÉGATIF  ✓
+  → coefficient de motos    : -0.3             → NÉGATIF  ✓
+  → JAMAIS : 0.3·camions - 0.7·voitures - 0.7·motos ≤ 0   ✗
 
 ════════════════════════════════════════════════════════
 RÈGLES GÉNÉRALES DU SCHÉMA JSON
