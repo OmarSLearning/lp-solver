@@ -6,6 +6,12 @@ Supporte :
   - Variables entières (ILP)
   - Variables binaires (BLP)
   - Mixte continu + entier + binaire (MIP)
+  - Problèmes apparemment non linéaires linéarisables :
+      * Produit de variables liées (sélection de scénarios)
+      * Valeur absolue
+      * Max/min d'expressions
+      * Fonctions affines par morceaux
+      * Produit variable continue × binaire (McCormick)
 
 Compatible Streamlit Cloud — clé API dans st.secrets["OPENROUTER_API_KEY"].
 """
@@ -46,26 +52,67 @@ LP_SCHEMA = """
 }
 """
 
-SYSTEM_PROMPT_TEXT = f"""Tu es un expert en optimisation linéaire et en programmation en nombres entiers (MIP).
+SYSTEM_PROMPT_TEXT = f"""Tu es un expert en optimisation linéaire, MIP et en linéarisation de problèmes apparemment non linéaires.
+
 L'utilisateur te décrit un problème d'optimisation en langage naturel.
-Tu dois extraire le programme linéaire/MIP correspondant et retourner UNIQUEMENT un objet JSON valide,
+Tu dois extraire un programme linéaire/MIP VALIDE et retourner UNIQUEMENT un objet JSON,
 sans aucun texte avant ou après, sans balises markdown, sans commentaires.
 
 Le JSON doit respecter strictement ce schéma :
 {LP_SCHEMA}
 
-Règles importantes :
-- Toutes les variables doivent apparaître dans la section "variables".
-- Le champ "type" est obligatoire pour chaque variable :
-    * "continuous" : variable réelle (défaut si non précisé)
-    * "integer"    : variable entière (ex: nombre de machines, unités produites)
-    * "binary"     : variable 0/1 (ex: décision oui/non, sélection)
-- Pour les variables binaires : lb=0, ub=1 automatiquement.
-- lb=0 par défaut si non précisé (non-négativité standard).
-- ub=null si pas de borne supérieure.
-- Détecte le type depuis le contexte : "nombre entier de produits" → integer,
-  "décision d'ouvrir ou non" → binary, "quantité" sans précision → continuous.
-- "sense" doit être exactement "<=", ">=" ou "=".
+════════════════════════════════════════════════════════
+ÉTAPE 0 — DÉTECTION ET LINÉARISATION (OBLIGATOIRE)
+════════════════════════════════════════════════════════
+
+Avant toute modélisation, analyse si le problème contient des non-linéarités :
+
+① PRODUIT DE VARIABLES (ex: revenu = prix × quantité)
+   → Technique : sélection de scénarios discrets par variables binaires.
+   
+   Exemple canonique : prix p et quantité q sont liés par une relation affine
+   p = p0 - α·k  et  q = q0 + β·k  avec k ∈ {{0,1,...,K}}
+   
+   Le produit p·q devient non linéaire. Linéarisation :
+   - Énumérer tous les scénarios k = 0, 1, ..., K_max
+   - Pour chaque k, calculer le profit scalaire π_k = (p_k - coût_unitaire)·q_k - coût_fixe
+   - Introduire une variable binaire y_k pour chaque scénario
+   - Maximiser Σ π_k · y_k
+   - Contrainte : Σ y_k = 1 (exactement un scénario choisi)
+   - K_max : borne naturelle (ex: prix_k ≥ coût_unitaire, ou capacité max).
+     Si non précisé, déduire depuis le contexte.
+   
+   Variables auxiliaires de reporting (si l'énoncé demande prix/quantité) :
+   - p = Σ p_k · y_k  (variable continue)
+   - q = Σ q_k · y_k  (variable continue)
+   Ajouter les contraintes d'égalité correspondantes dans "constraints".
+
+② VALEUR ABSOLUE  |x|
+   → Introduire z ≥ x  et  z ≥ -x,  minimiser z.
+
+③ MAX/MIN D'EXPRESSIONS  max(a, b)
+   → Variable auxiliaire z ≥ a,  z ≥ b.
+
+④ FONCTION AFFINE PAR MORCEAUX
+   → Décomposition en segments avec variables binaires (SOS2 ou Big-M).
+
+⑤ PRODUIT VARIABLE CONTINUE × BINAIRE  x · y
+   → Linéarisation de McCormick : w = x·y
+     w ≤ U·y,   w ≥ L·y,   w ≤ x - L(1-y),   w ≥ x - U(1-y)
+
+════════════════════════════════════════════════════════
+RÈGLES GÉNÉRALES DU SCHÉMA JSON
+════════════════════════════════════════════════════════
+
+- Toutes les variables (y compris les y_k binaires) apparaissent dans "variables".
+- "type" obligatoire : "continuous" | "integer" | "binary".
+- lb=0 par défaut. ub=null si non borné supérieurement.
+- Pour les binaires : lb=0, ub=1 automatiquement.
+- "sense" ∈ {{"<=", ">=", "="}}.
+- Les coefficients π_k dans l'objectif sont des scalaires PRÉ-CALCULÉS (float).
+- Noms de variables : identifiants sans espaces (y_0, y_1, ...).
+- Contraintes d'égalité pour variables auxiliaires incluses dans "constraints".
+- "label" dans chaque contrainte est recommandé pour la lisibilité.
 """
 
 SYSTEM_PROMPT_LP = f"""Tu es un expert en optimisation linéaire et MIP.
@@ -83,6 +130,8 @@ Règles :
 - Variables non listées dans ces sections → type "continuous".
 - Pour les variables binaires : lb=0, ub=1.
 - lb=0 par défaut si non précisé. ub=null si non borné supérieurement.
+- Si l'objectif contient un produit de variables, applique la même logique de
+  linéarisation par scénarios que dans le prompt texte avant de générer le JSON.
 """
 
 # ---------------------------------------------------------------------------
@@ -103,7 +152,7 @@ def _call_openrouter(prompt: str, system: str) -> str:
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.0,
-        "max_tokens": 2048,
+        "max_tokens": 4096,   # augmenté : les scénarios énumérés peuvent être longs
         "provider": {
             "sort": "throughput",
         },
@@ -172,12 +221,10 @@ def _validate_lp_model(model: dict) -> dict:
     # Normalisation des types et bornes
     VALID_TYPES = ("continuous", "integer", "binary")
     for name, cfg in model["variables"].items():
-        # Type par défaut si absent
         if "type" not in cfg:
             cfg["type"] = "continuous"
         if cfg["type"] not in VALID_TYPES:
             cfg["type"] = "continuous"
-        # Bornes automatiques pour binaire
         if cfg["type"] == "binary":
             cfg["lb"] = 0
             cfg["ub"] = 1
