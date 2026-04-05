@@ -124,14 +124,22 @@ CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
 CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
-  x ≥ P × (x + y + z + ...)
-(1-P)·x - P·y - P·z - ... ≥ 0
-  → Identifier explicitement quelle variable est celle mentionnée dans la proportion
-  → Cette variable concernée reçoit (1-P)
-  → Toutes les autres variables reçoivent -P
-  → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
-  → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: ">=", rhs: 0
+  Soit A = variable concernée par le pourcentage
+  Soit B, C, ... = toutes les autres variables
 
+  Développement :
+  A ≥ P × (A + B + C + ...)
+  A - P·A - P·B - P·C - ... ≥ 0
+  (1-P)·A - P·B - P·C - ... ≥ 0
+
+  → A reçoit le coefficient (1-P)
+  → B, C, ... reçoivent chacun le coefficient -P
+  → sense: ">=" , rhs: 0
+
+  VÉRIFICATION OBLIGATOIRE avant d'écrire le JSON :
+  - Ai-je bien identifié A (variable mentionnée dans la proportion) ?
+  - Le coefficient de A est-il (1-P) et non P ?
+  - Les coefficients de B, C, ... sont-ils -P et non -(1-P) ?
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
 ────────────────────────────────────────────────────────
