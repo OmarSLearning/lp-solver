@@ -126,8 +126,10 @@ CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
   ÉTAPE 1 : Recopier littéralement la phrase de l'énoncé.
   ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
-            "at least P% of trips must be by CAR" → A = variable des CAR
-            "at least P% of trips must be by BUS" → A = variable des BUS
+            "[type] must represent at least P% of [total]" → A = variable représentant [type]
+            → Rechercher dans "variables" le nom exact associé à [type],
+              indépendamment de son ordre de déclaration (x, y, z, ...).
+              A peut être x, y, ou toute autre variable du modèle.
   ÉTAPE 3 : Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
   ÉTAPE 4 : Développer terme à terme :
             A - P·A - P·B - P·C - ... ≥ 0
