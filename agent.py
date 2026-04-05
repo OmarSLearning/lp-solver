@@ -107,19 +107,19 @@ Quand un énoncé exprime une proportion/pourcentage d'un TOTAL, la variable
 du numérateur doit être comparée au TOTAL, pas au reste.
 
 ERREUR FRÉQUENTE À ÉVITER (les deux cas) :
-  ✗  x ≤ P × y          (P% du complément — FAUX)
-  ✓  x ≤ P × (x + y)    (P% du total     — CORRECT)
+  ✗  A ≤ P × A          (P% du complément — FAUX)
+  ✓  A ≤ P × (A + B)    (P% du total     — CORRECT)
 
 ────────────────────────────────────────────────────────
 CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
-  x ≤ P × (x + y + z + ...)
-  (1-P)·x - P·y - P·z - ... ≤ 0
+  A ≤ P × (A + B + C + ...)
+  (1-P)·A - P·B - P·C - ... ≤ 0
 → Identifier explicitement quelle variable est celle mentionnée dans la proportion
   → Cette variable concernée reçoit (1-P)
   → Toutes les autres variables reçoivent -P
   → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
-  → coefficients : {{x: (1-P), y: -P, z: -P, ...}}, sense: "<=", rhs: 0
+  → coefficients : {{A: (1-P), B: -P, C: -P, ...}}, sense: "<=", rhs: 0
 
 ────────────────────────────────────────────────────────
 CAS 2 — "au moins P% du total" (at least / minimum)
@@ -128,7 +128,7 @@ CAS 2 — "au moins P% du total" (at least / minimum)
   ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
             "[type] must represent at least P% of [total]" → A = variable représentant [type]
             → Rechercher dans "variables" le nom exact associé à [type],
-              indépendamment de son ordre de déclaration (x, y, z, ...).
+              indépendamment de son ordre de déclaration (A, B, C, ...).
               A peut être x, y, ou toute autre variable du modèle.
   ÉTAPE 3 : Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
   ÉTAPE 4 : Développer terme à terme :
