@@ -171,10 +171,11 @@ RÈGLES GÉNÉRALES DU SCHÉMA JSON
 - Noms de variables : identifiants sans espaces (y_0, y_1, ...).
 - Contraintes d'égalité pour variables auxiliaires incluses dans "constraints".
 - "label" dans chaque contrainte est recommandé pour la lisibilité.
-- Pour toute contrainte de proportion : identifier d'abord la variable A
-  (celle mentionnée dans la proportion) en consultant "variables",
-  puis appliquer (1-P) à A et -P à toutes les autres.
-  L'ordre de déclaration des variables dans le modèle ne détermine pas A.
+- Pour toute contrainte de proportion : avant d'écrire le JSON, poser
+  explicitement la phrase "A = variable représentant [type mentionné dans
+  la proportion]", puis vérifier que le coefficient de A dans le JSON
+  est (1-P) et non P. Si le coefficient de A est P, les coefficients
+  sont inversés — permuter (1-P) et -P entre les variables avant d'écrire.
 """
 
 SYSTEM_PROMPT_LP = f"""Tu es un expert en optimisation linéaire et MIP.
