@@ -52,7 +52,7 @@ LP_SCHEMA = """
 }
 """
 
-SYSTEM_PROMPT_TEXT = f"""Tu es un expert en optimisation linéaire, MIP et en linéarisation de problèmes apparemment non linéaires.
+SYSTEM_PROMPT_TEXT = """Tu es un expert en optimisation linéaire, MIP et en linéarisation de problèmes apparemment non linéaires.
 
 L'utilisateur te décrit un problème d'optimisation en langage naturel.
 Tu dois extraire un programme linéaire/MIP VALIDE et retourner UNIQUEMENT un objet JSON,
