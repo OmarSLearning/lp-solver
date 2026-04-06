@@ -107,27 +107,46 @@ Quand un énoncé exprime une proportion/pourcentage d'un TOTAL, la variable
 du numérateur doit être comparée au TOTAL, pas au reste.
 
 ERREUR FRÉQUENTE À ÉVITER (les deux cas) :
-  At most
-  ✗  A ≤ P × A          (P% du complément — FAUX)
-  ✓  A ≤ P × (A + B)    (P% du total     — CORRECT)
-  At least
-  ✗  A ≥ P × A          (P% du complément — FAUX)
-  ✓  A ≥ P × (A + B)    (P% du total     — CORRECT)
-
+  ✗  x ≤ P × y          (P% du complément — FAUX)
+  ✓  x ≤ P × (x + y)    (P% du total     — CORRECT)
 
 ────────────────────────────────────────────────────────
 CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
-  A ≤ P × (A + B + C + ...)
-  (1-P)·A - P·B - P·C - ... ≤ 0
-  B ≤ P × (A + B + C + ...)
-  (1-P)·B - P·A - P·C - ... ≤ 0
-→ Identifier explicitement quelle variable est celle mentionnée dans la proportion
-  → Cette variable concernée reçoit (1-P)
-  → Toutes les autres variables reçoivent -P
-  → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
-  → coefficients : {{A: (1-P), B: -P, C: -P, ...}}, sense: "<=", rhs: 0
+  ÉTAPE 1 : Recopier littéralement la phrase de l'énoncé.
+  ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
+            "[type] cannot exceed P% of [total]" → A = variable représentant [type]
+            → Rechercher dans "variables" le nom exact associé à [type],
+              indépendamment de son ordre de déclaration (x, y, z, ...).
+              A peut être x, y, ou toute autre variable du modèle.
+  ÉTAPE 3 : Écrire l'inégalité brute : A ≤ P × (A + B + C + ...)
+  ÉTAPE 4 : Développer terme à terme :
+            A - P·A - P·B - P·C - ... ≤ 0
+            (1-P)·A - P·B - P·C - ... ≤ 0
+  ÉTAPE 5 : Écrire les coefficients JSON :
+            → A reçoit (1-P), toutes les autres reçoivent -P
+            → sense: "<=", rhs: 0
+  ÉTAPE 6 : VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
+            que la contrainte est satisfaite à l'égalité.
 
+────────────────────────────────────────────────────────
+CAS 2 — "au moins P% du total" (at least / minimum)
+────────────────────────────────────────────────────────
+  ÉTAPE 1 : Recopier littéralement la phrase de l'énoncé.
+  ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
+            "[type] must represent at least P% of [total]" → A = variable représentant [type]
+            → Rechercher dans "variables" le nom exact associé à [type],
+              indépendamment de son ordre de déclaration (x, y, z, ...).
+              A peut être x, y, ou toute autre variable du modèle.
+  ÉTAPE 3 : Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
+  ÉTAPE 4 : Développer terme à terme :
+            A - P·A - P·B - P·C - ... ≥ 0
+            (1-P)·A - P·B - P·C - ... ≥ 0
+  ÉTAPE 5 : Écrire les coefficients JSON :
+            → A reçoit (1-P), toutes les autres reçoivent -P
+            → sense: ">=", rhs: 0
+  ÉTAPE 6 : VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
+            que la contrainte est satisfaite à l'égalité.
 
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
@@ -137,6 +156,7 @@ Formulations déclenchant cette règle :
   - "[type] cannot exceed X% of [total]"        → CAS 1, sense "<="
   - "at least X% must be [type]"                → CAS 2, sense ">="
   - "minimum X% of [total] should be [type]"    → CAS 2, sense ">="
+
 
 ════════════════════════════════════════════════════════
 RÈGLES GÉNÉRALES DU SCHÉMA JSON
@@ -151,10 +171,10 @@ RÈGLES GÉNÉRALES DU SCHÉMA JSON
 - Noms de variables : identifiants sans espaces (y_0, y_1, ...).
 - Contraintes d'égalité pour variables auxiliaires incluses dans "constraints".
 - "label" dans chaque contrainte est recommandé pour la lisibilité.
-- Pour toute contrainte de proportion du Total concernant la variable B, les coefficients doivent être ceux issus
-  du développement algébrique de B ≤ P×(A+B+...) pour une quantité au plus et B >= P×(A+B+...) pour une quantité au moins,
-  jamais P appliqué à une seule variable isolée. La variable concernée reçoit
-  toujours (1-P), toutes les autres reçoivent -P. Vérifier systématiquement avant d'écrire le JSON.
+- Pour toute contrainte de proportion : identifier d'abord la variable A
+  (celle mentionnée dans la proportion) en consultant "variables",
+  puis appliquer (1-P) à A et -P à toutes les autres.
+  L'ordre de déclaration des variables dans le modèle ne détermine pas A.
 """
 
 SYSTEM_PROMPT_LP = f"""Tu es un expert en optimisation linéaire et MIP.
