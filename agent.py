@@ -163,7 +163,7 @@ Exemple 1 — "at most P% of total can be A"
   Développement : A - P·A - P·B ≤ 0 → (1-P)·A - P·B ≤ 0
   JSON :
     "sense": "<=",
-    "coefficients": {"A": 1-P, "B": -P},
+    "coefficients": {{"A": 1-P, "B": -P}},
     "rhs": 0
 
 Exemple 2 — "at least Q% of total must be X"
@@ -173,7 +173,7 @@ Exemple 2 — "at least Q% of total must be X"
   Développement : X - Q·X - Q·Y ≥ 0 → (1-Q)·X - Q·Y ≥ 0
   JSON :
     "sense": ">=",
-    "coefficients": {"X": 1-Q, "Y": -Q},
+    "coefficients": {{"X": 1-Q, "Y": -Q}},
     "rhs": 0
 
 Règles d'application :
