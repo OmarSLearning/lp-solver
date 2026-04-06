@@ -52,7 +52,7 @@ LP_SCHEMA = """
 }
 """
 
-SYSTEM_PROMPT_TEXT = """Tu es un expert en optimisation linéaire, MIP et en linéarisation de problèmes apparemment non linéaires.
+SYSTEM_PROMPT_TEXT = f"""Tu es un expert en optimisation linéaire, MIP et en linéarisation de problèmes apparemment non linéaires.
 
 L'utilisateur te décrit un problème d'optimisation en langage naturel.
 Tu dois extraire un programme linéaire/MIP VALIDE et retourner UNIQUEMENT un objet JSON,
@@ -146,7 +146,7 @@ CAS 2 — "au moins P% du total" (at least / minimum)
      doit donner 0 ≥ 0. Par exemple, avec P=0.6, A=0.6(A+B) → 0.4A -0.6B = 0.
   g) ATTENTION : Ne jamais écrire P·A - P·B ≥ 0 (c'est une erreur fréquente).
      Le coefficient de A doit être (1-P), pas P.
-  h) Écrire les coefficients JSON : {"A": 1-P, "B": -P, ...} avec les valeurs numériques calculées.
+  h) Écrire les coefficients JSON : {{"A": 1-P, "B": -P, ...}} avec les valeurs numériques calculées.
   
 ════════════════════════════════════════════════════════
 EXEMPLES GÉNÉRIQUES (sans noms de variables spécifiques)
