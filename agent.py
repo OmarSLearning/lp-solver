@@ -128,21 +128,7 @@ CAS 1 — "au plus P% du total" (at most / no more than)
   → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
   → coefficients : {{A: (1-P), B: -P, C: -P, ...}}, sense: "<=", rhs: 0
 
-────────────────────────────────────────────────────────
-CAS 2 — "au moins P% du total" (at least / minimum)
-────────────────────────────────────────────────────────
-  A >= P × (A + B + C + ...)
-  (1-P)·A - P·B - P·C - ... >= 0
-  B >= P × (A + B + C + ...)
-  (1-P)·B - P·A - P·C - ... >= 0
-→ Identifier explicitement quelle variable est celle mentionnée dans la proportion
-  → Cette variable concernée reçoit (1-P)
-  → Toutes les autres variables reçoivent -P
-  → VÉRIFICATION : la variable concernée a-t-elle le coefficient (1-P) ? Si non, corriger.
-  → Si A est concernée, coefficients : {{A: (1-P), B: -P, C: -P, ...}}, sense: ">=", rhs: 0
-  → Si B est concernée, coefficients : {{A: -P, B: (1-P), C: -P, ...}}, sense: ">=", rhs: 0
-  → Si C est concernée, coefficients : {{A: -P, B: -P, C: (1-P), ...}}, sense: ">=", rhs: 0
-  → ... 
+
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
 ────────────────────────────────────────────────────────
