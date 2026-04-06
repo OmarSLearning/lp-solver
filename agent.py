@@ -110,6 +110,7 @@ ERREUR FRÉQUENTE À ÉVITER (les deux cas) :
   ✗  x ≤ P × y          (P% du complément — FAUX)
   ✓  x ≤ P × (x + y)    (P% du total     — CORRECT)
 
+────────────────────────────────────────────────────────
 CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
   a) Recopier littéralement la phrase de l'énoncé.
@@ -119,7 +120,7 @@ CAS 1 — "au plus P% du total" (at most / no more than)
        indépendamment de son ordre de déclaration (x, y, z, ...).
        A peut être x, y, ou toute autre variable du modèle.
   c) Écrire l'inégalité brute : A ≤ P × (A + B + C + ...)
-  d) Développer terme à terme et calculer les coefficients numériques :
+  d) Développer terme à terme et calculer les coefficients numériquement :
      A - P·A - P·B - P·C - ... ≤ 0
      (1-P)·A - P·B - P·C - ... ≤ 0
      → Calculer (1-P) et -P numériquement avant d'écrire le JSON.
@@ -130,53 +131,28 @@ CAS 1 — "au plus P% du total" (at most / no more than)
   f) VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
      que la contrainte est satisfaite à l'égalité.
 
+────────────────────────────────────────────────────────
 CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
   a) Recopier littéralement la phrase de l'énoncé.
   b) Identifier le sujet de la phrase → c'est la variable A.
      "[type] must represent at least P% of [total]" → A = variable représentant [type]
+     → Rechercher dans "variables" le nom exact associé à [type],
+       indépendamment de son ordre de déclaration (x, y, z, ...).
+       A peut être x, y, ou toute autre variable du modèle.
   c) Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
-  d) Développer terme à terme :
+  d) Développer terme à terme et calculer les coefficients numériquement :
      A - P·A - P·B - P·C - ... ≥ 0
      (1-P)·A - P·B - P·C - ... ≥ 0
-  e) AVANT D'ÉCRIRE LE JSON, CALCULER NUMÉRIQUEMENT (1-P) et -P.
-     Exemple : P = 0.6 → (1-P) = 0.4, -P = -0.6.
-     Donc coefficients : A reçoit 0.4, les autres reçoivent -0.6.
-  f) VÉRIFICATION OBLIGATOIRE : remplacer A par P×(A+B) dans l'inégalité
-     doit donner 0 ≥ 0. Par exemple, avec P=0.6, A=0.6(A+B) → 0.4A -0.6B = 0.
-  g) ATTENTION : Ne jamais écrire P·A - P·B ≥ 0 (c'est une erreur fréquente).
-     Le coefficient de A doit être (1-P), pas P.
-  h) Écrire les coefficients JSON : {{"A": 1-P, "B": -P, ...}} avec les valeurs numériques calculées.
-  
-════════════════════════════════════════════════════════
-EXEMPLES GÉNÉRIQUES (sans noms de variables spécifiques)
-════════════════════════════════════════════════════════
-
-Exemple 1 — "at most P% of total can be A"
-  Variables : A, B (les deux composantes du total)
-  Sujet = A
-  Inégalité brute : A ≤ P × (A + B)
-  Développement : A - P·A - P·B ≤ 0 → (1-P)·A - P·B ≤ 0
-  JSON :
-    "sense": "<=",
-    "coefficients": {{"A": 1-P, "B": -P}},
-    "rhs": 0
-
-Exemple 2 — "at least Q% of total must be X"
-  Variables : X, Y
-  Sujet = X
-  Inégalité brute : X ≥ Q × (X + Y)
-  Développement : X - Q·X - Q·Y ≥ 0 → (1-Q)·X - Q·Y ≥ 0
-  JSON :
-    "sense": ">=",
-    "coefficients": {{"X": 1-Q, "Y": -Q}},
-    "rhs": 0
-
-Règles d'application :
-- P et Q sont des nombres décimaux (ex: 60% → 0.6)
-- Les noms A, B, X, Y sont des placeholders ; remplacez-les par les noms réels des variables trouvés dans l'énoncé.
-- Pour identifier la variable sujet, cherchez le nom qui suit "can be" ou "must be" dans la phrase.
-- Ne jamais écrire A ≤ P * B ou X ≥ Q * Y (ce serait une erreur).
+     → Calculer (1-P) et -P numériquement avant d'écrire le JSON.
+     → TEST BLOQUANT : si le coefficient de A = P (et non 1-P), STOP —
+       les coefficients sont inversés, reprendre depuis l'étape b).
+     → Vérifier : somme de tous les coefficients = (1-P) + (-P)×n ≠ 0
+  e) Écrire les coefficients JSON :
+     → A reçoit (1-P), toutes les autres reçoivent -P
+     → sense: ">=", rhs: 0
+  f) VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
+     que la contrainte est satisfaite à l'égalité.
 
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
@@ -186,7 +162,6 @@ Formulations déclenchant cette règle :
   - "[type] cannot exceed X% of [total]"        → CAS 1, sense "<="
   - "at least X% must be [type]"                → CAS 2, sense ">="
   - "minimum X% of [total] should be [type]"    → CAS 2, sense ">="
-
 
 ════════════════════════════════════════════════════════
 RÈGLES GÉNÉRALES DU SCHÉMA JSON
