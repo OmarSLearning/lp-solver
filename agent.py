@@ -110,43 +110,41 @@ ERREUR FRÉQUENTE À ÉVITER (les deux cas) :
   ✗  x ≤ P × y          (P% du complément — FAUX)
   ✓  x ≤ P × (x + y)    (P% du total     — CORRECT)
 
-────────────────────────────────────────────────────────
 CAS 1 — "au plus P% du total" (at most / no more than)
 ────────────────────────────────────────────────────────
-  ÉTAPE 1 : Recopier littéralement la phrase de l'énoncé.
-  ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
-            "[type] cannot exceed P% of [total]" → A = variable représentant [type]
-            → Rechercher dans "variables" le nom exact associé à [type],
-              indépendamment de son ordre de déclaration (x, y, z, ...).
-              A peut être x, y, ou toute autre variable du modèle.
-  ÉTAPE 3 : Écrire l'inégalité brute : A ≤ P × (A + B + C + ...)
-  ÉTAPE 4 : Développer terme à terme :
-            A - P·A - P·B - P·C - ... ≤ 0
-            (1-P)·A - P·B - P·C - ... ≤ 0
-  ÉTAPE 5 : Écrire les coefficients JSON :
-            → A reçoit (1-P), toutes les autres reçoivent -P
-            → sense: "<=", rhs: 0
-  ÉTAPE 6 : VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
-            que la contrainte est satisfaite à l'égalité.
+  a) Recopier littéralement la phrase de l'énoncé.
+  b) Identifier le sujet de la phrase → c'est la variable A.
+     "[type] cannot exceed P% of [total]" → A = variable représentant [type]
+     → Rechercher dans "variables" le nom exact associé à [type],
+       indépendamment de son ordre de déclaration (x, y, z, ...).
+       A peut être x, y, ou toute autre variable du modèle.
+  c) Écrire l'inégalité brute : A ≤ P × (A + B + C + ...)
+  d) Développer terme à terme :
+     A - P·A - P·B - P·C - ... ≤ 0
+     (1-P)·A - P·B - P·C - ... ≤ 0
+  e) Écrire les coefficients JSON :
+     → A reçoit (1-P), toutes les autres reçoivent -P
+     → sense: "<=", rhs: 0
+  f) VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
+     que la contrainte est satisfaite à l'égalité.
 
-────────────────────────────────────────────────────────
 CAS 2 — "au moins P% du total" (at least / minimum)
 ────────────────────────────────────────────────────────
-  ÉTAPE 1 : Recopier littéralement la phrase de l'énoncé.
-  ÉTAPE 2 : Identifier le sujet de la phrase → c'est la variable A.
-            "[type] must represent at least P% of [total]" → A = variable représentant [type]
-            → Rechercher dans "variables" le nom exact associé à [type],
-              indépendamment de son ordre de déclaration (x, y, z, ...).
-              A peut être x, y, ou toute autre variable du modèle.
-  ÉTAPE 3 : Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
-  ÉTAPE 4 : Développer terme à terme :
-            A - P·A - P·B - P·C - ... ≥ 0
-            (1-P)·A - P·B - P·C - ... ≥ 0
-  ÉTAPE 5 : Écrire les coefficients JSON :
-            → A reçoit (1-P), toutes les autres reçoivent -P
-            → sense: ">=", rhs: 0
-  ÉTAPE 6 : VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
-            que la contrainte est satisfaite à l'égalité.
+  a) Recopier littéralement la phrase de l'énoncé.
+  b) Identifier le sujet de la phrase → c'est la variable A.
+     "[type] must represent at least P% of [total]" → A = variable représentant [type]
+     → Rechercher dans "variables" le nom exact associé à [type],
+       indépendamment de son ordre de déclaration (x, y, z, ...).
+       A peut être x, y, ou toute autre variable du modèle.
+  c) Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
+  d) Développer terme à terme :
+     A - P·A - P·B - P·C - ... ≥ 0
+     (1-P)·A - P·B - P·C - ... ≥ 0
+  e) Écrire les coefficients JSON :
+     → A reçoit (1-P), toutes les autres reçoivent -P
+     → sense: ">=", rhs: 0
+  f) VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
+     que la contrainte est satisfaite à l'égalité.
 
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
