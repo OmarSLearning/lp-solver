@@ -143,6 +143,8 @@ CAS 2 — "au moins P% du total" (at least / minimum)
      A - P·A - P·B - P·C - ... ≥ 0
      (1-P)·A - P·B - P·C - ... ≥ 0
      → Calculer (1-P) et -P numériquement avant d'écrire le JSON.
+     → TEST BLOQUANT : si le coefficient de A = P (et non 1-P), STOP —
+       les coefficients sont inversés, reprendre depuis l'étape b).
      → Vérifier : somme de tous les coefficients = (1-P) + (-P)×n ≠ 0
   e) Écrire les coefficients JSON :
      → A reçoit (1-P), toutes les autres reçoivent -P
