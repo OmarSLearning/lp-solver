@@ -151,8 +151,8 @@ RÈGLES GÉNÉRALES DU SCHÉMA JSON
 - Noms de variables : identifiants sans espaces (y_0, y_1, ...).
 - Contraintes d'égalité pour variables auxiliaires incluses dans "constraints".
 - "label" dans chaque contrainte est recommandé pour la lisibilité.
-- Pour toute contrainte de proportion, les coefficients doivent être ceux issus
-  du développement algébrique de x ≤ P×(x+y+...) pour une quantité au plus et x >= P×(x+y+...) pour une quantité au moins,
+- Pour toute contrainte de proportion du Total concernant la variable B, les coefficients doivent être ceux issus
+  du développement algébrique de B ≤ P×(A+B+...) pour une quantité au plus et B >= P×(A+B+...) pour une quantité au moins,
   jamais P appliqué à une seule variable isolée. La variable concernée reçoit
   toujours (1-P), toutes les autres reçoivent -P. Vérifier systématiquement avant d'écrire le JSON.
 """
