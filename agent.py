@@ -119,9 +119,11 @@ CAS 1 — "au plus P% du total" (at most / no more than)
        indépendamment de son ordre de déclaration (x, y, z, ...).
        A peut être x, y, ou toute autre variable du modèle.
   c) Écrire l'inégalité brute : A ≤ P × (A + B + C + ...)
-  d) Développer terme à terme :
+  d) Développer terme à terme et calculer les coefficients numériques :
      A - P·A - P·B - P·C - ... ≤ 0
      (1-P)·A - P·B - P·C - ... ≤ 0
+     → Calculer (1-P) et -P numériquement avant d'écrire le JSON.
+     → Vérifier : somme de tous les coefficients = (1-P) + (-P)×n ≠ 0
   e) Écrire les coefficients JSON :
      → A reçoit (1-P), toutes les autres reçoivent -P
      → sense: "<=", rhs: 0
@@ -137,9 +139,11 @@ CAS 2 — "au moins P% du total" (at least / minimum)
        indépendamment de son ordre de déclaration (x, y, z, ...).
        A peut être x, y, ou toute autre variable du modèle.
   c) Écrire l'inégalité brute : A ≥ P × (A + B + C + ...)
-  d) Développer terme à terme :
+  d) Développer terme à terme et calculer les coefficients numériquement :
      A - P·A - P·B - P·C - ... ≥ 0
      (1-P)·A - P·B - P·C - ... ≥ 0
+     → Calculer (1-P) et -P numériquement avant d'écrire le JSON.
+     → Vérifier : somme de tous les coefficients = (1-P) + (-P)×n ≠ 0
   e) Écrire les coefficients JSON :
      → A reçoit (1-P), toutes les autres reçoivent -P
      → sense: ">=", rhs: 0
