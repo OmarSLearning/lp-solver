@@ -152,6 +152,36 @@ CAS 2 — "au moins P% du total" (at least / minimum)
   f) VÉRIFICATION — substituer A = P×(A+B+C+...) et confirmer
      que la contrainte est satisfaite à l'égalité.
 
+════════════════════════════════════════════════════════
+EXEMPLES GÉNÉRIQUES (sans noms de variables spécifiques)
+════════════════════════════════════════════════════════
+
+Exemple 1 — "at most P% of total can be A"
+  Variables : A, B (les deux composantes du total)
+  Sujet = A
+  Inégalité brute : A ≤ P × (A + B)
+  Développement : A - P·A - P·B ≤ 0 → (1-P)·A - P·B ≤ 0
+  JSON :
+    "sense": "<=",
+    "coefficients": {"A": 1-P, "B": -P},
+    "rhs": 0
+
+Exemple 2 — "at least Q% of total must be X"
+  Variables : X, Y
+  Sujet = X
+  Inégalité brute : X ≥ Q × (X + Y)
+  Développement : X - Q·X - Q·Y ≥ 0 → (1-Q)·X - Q·Y ≥ 0
+  JSON :
+    "sense": ">=",
+    "coefficients": {"X": 1-Q, "Y": -Q},
+    "rhs": 0
+
+Règles d'application :
+- P et Q sont des nombres décimaux (ex: 60% → 0.6)
+- Les noms A, B, X, Y sont des placeholders ; remplacez-les par les noms réels des variables trouvés dans l'énoncé.
+- Pour identifier la variable sujet, cherchez le nom qui suit "can be" ou "must be" dans la phrase.
+- Ne jamais écrire A ≤ P * B ou X ≥ Q * Y (ce serait une erreur).
+
 ────────────────────────────────────────────────────────
 Formulations déclenchant cette règle :
 ────────────────────────────────────────────────────────
