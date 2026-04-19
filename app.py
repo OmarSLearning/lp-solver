@@ -114,7 +114,7 @@ if solve_btn:
         # Extraction LLM
         with st.status("🤖 Extraction du modèle via LLM…", expanded=True) as status:
             try:
-                st.write("Appel à OpenRouter…")
+                st.write("Appel à Groq…")
                 if mode == "Texte naturel":
                     lp_model = extract_lp_from_text(user_input)
                 else:
@@ -199,6 +199,6 @@ if solve_btn:
 
 st.divider()
 st.caption(
-    "LP/MIP Solver PoC · OpenRouter + PuLP/CBC · "
+    "LP/MIP Solver PoC · Groq + PuLP/CBC · "
     "Phase 1 — GitHub/Streamlit Cloud · CC BY-NC 4.0"
 )
