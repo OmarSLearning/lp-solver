@@ -1,5 +1,5 @@
 """
-Agent LLM — extraction du modèle MIP/LP via OpenRouter.
+Agent LLM — extraction du modèle MIP/LP via Groq.
 
 Supporte :
   - Variables continues (LP)
@@ -13,7 +13,7 @@ Supporte :
       * Fonctions affines par morceaux
       * Produit variable continue × binaire (McCormick)
 
-Compatible Streamlit Cloud — clé API dans st.secrets["OPENROUTER_API_KEY"].
+Compatible Streamlit Cloud — clé API dans st.secrets["GROQ_API_KEY"].
 """
 
 import json
@@ -25,8 +25,8 @@ import streamlit as st
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "meta-llama/llama-3.3-70b-instruct"
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "llama-3.3-70b-versatile"
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 LP_SCHEMA = """
 {
@@ -142,12 +142,10 @@ Règles :
 # Fonctions internes
 # ---------------------------------------------------------------------------
 
-def _call_openrouter(prompt: str, system: str) -> str:
+def _call_groq(prompt: str, system: str) -> str:
     headers = {
-        "Authorization": f"Bearer {st.secrets['OPENROUTER_API_KEY']}",
+        "Authorization": f"Bearer {st.secrets['GROQ_API_KEY']}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://lp-solver-souissi.streamlit.app",
-        "X-OpenRouter-Title": "LP Solver",
     }
     payload = {
         "model": MODEL,
@@ -156,29 +154,24 @@ def _call_openrouter(prompt: str, system: str) -> str:
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.0,
-        "max_tokens": 4096,   # augmenté : les scénarios énumérés peuvent être longs
-        "provider": {
-            "sort": "throughput",
-        },
+        "max_tokens": 4096,
     }
     try:
         response = requests.post(
-            OPENROUTER_URL, headers=headers, json=payload, timeout=120
+            GROQ_URL, headers=headers, json=payload, timeout=60
         )
         response.raise_for_status()
-        content = response.json()["choices"][0]["message"]["content"]
-        content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
-        return content
+        return response.json()["choices"][0]["message"]["content"]
     except requests.exceptions.HTTPError as e:
         status_code = e.response.status_code if e.response is not None else "unknown"
         body = e.response.text[:300] if e.response is not None else ""
-        raise ValueError(f"OpenRouter a retourné une erreur HTTP {status_code}.\n{body}")
+        raise ValueError(f"Groq a retourné une erreur HTTP {status_code}.\n{body}")
     except requests.exceptions.ConnectionError:
-        raise ConnectionError("Impossible de joindre OpenRouter. Vérifiez votre connexion.")
+        raise ConnectionError("Impossible de joindre Groq. Vérifiez votre connexion.")
     except requests.exceptions.Timeout:
-        raise TimeoutError("OpenRouter n'a pas répondu dans les 120 secondes.")
+        raise TimeoutError("Groq n'a pas répondu dans les 60 secondes.")
     except (KeyError, IndexError):
-        raise ValueError("Réponse inattendue de l'API OpenRouter.")
+        raise ValueError("Réponse inattendue de l'API Groq.")
 
 
 def _extract_json(raw: str) -> dict:
@@ -241,12 +234,12 @@ def _validate_lp_model(model: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def extract_lp_from_text(user_text: str) -> dict:
-    raw = _call_openrouter(prompt=user_text, system=SYSTEM_PROMPT_TEXT)
+    raw = _call_groq(prompt=user_text, system=SYSTEM_PROMPT_TEXT)
     model = _extract_json(raw)
     return _validate_lp_model(model)
 
 
 def extract_lp_from_lp_format(lp_text: str) -> dict:
-    raw = _call_openrouter(prompt=lp_text, system=SYSTEM_PROMPT_LP)
+    raw = _call_groq(prompt=lp_text, system=SYSTEM_PROMPT_LP)
     model = _extract_json(raw)
     return _validate_lp_model(model)
