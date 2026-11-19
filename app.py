@@ -47,7 +47,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📐 LP / MIP Solver — Optimisation Linéaire")
+st.title("📐 LP / MIP Solver : Optimisation Linéaire")
 st.caption(
     "Supporte les programmes linéaires continus (LP), en nombres entiers (ILP/MIP) "
     "et binaires (BLP). Le LLM détecte automatiquement le type de chaque variable."
