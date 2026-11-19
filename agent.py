@@ -14,6 +14,10 @@ Supporte :
       * Produit variable continue × binaire (McCormick)
 
 Compatible Streamlit Cloud — clé API dans st.secrets["GROQ_API_KEY"].
+
+Protections :
+  - MAX_ENONCE_CHARS  : taille maximale de l'énoncé soumis (caractères)
+  - MAX_CALLS_SESSION : nombre maximal d'appels LLM par session utilisateur
 """
 
 import json
@@ -25,8 +29,13 @@ import streamlit as st
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "llama-3.3-70b-versatile"
+MODEL = "openai/gpt-oss-120b"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+# --- Garde-fous (modifiables sans toucher au reste du code) ----------------
+MAX_ENONCE_CHARS  = 2000   # caractères maximum acceptés dans l'énoncé
+MAX_CALLS_SESSION = 10     # appels LLM maximum par session utilisateur
+# ---------------------------------------------------------------------------
 
 LP_SCHEMA = """
 {
@@ -139,7 +148,39 @@ Règles :
 """
 
 # ---------------------------------------------------------------------------
-# Fonctions internes
+# Garde-fous — deux fonctions indépendantes, appelées avant chaque requête LLM
+# ---------------------------------------------------------------------------
+
+def _check_enonce(text: str) -> None:
+    """Lève une ValueError si l'énoncé dépasse MAX_ENONCE_CHARS."""
+    if len(text) > MAX_ENONCE_CHARS:
+        raise ValueError(
+            f"⚠️ Énoncé trop long ({len(text)} caractères). "
+            f"Limite : {MAX_ENONCE_CHARS} caractères. "
+            f"Veuillez reformuler votre problème de manière plus concise."
+        )
+
+
+def _check_quota() -> None:
+    """
+    Lève une ValueError si l'utilisateur a atteint MAX_CALLS_SESSION
+    appels LLM au cours de sa session Streamlit.
+    Initialise le compteur si c'est le premier appel de la session.
+    """
+    if "llm_call_count" not in st.session_state:
+        st.session_state["llm_call_count"] = 0
+
+    if st.session_state["llm_call_count"] >= MAX_CALLS_SESSION:
+        raise ValueError(
+            f"⚠️ Quota de session atteint ({MAX_CALLS_SESSION} résolutions maximum). "
+            f"Veuillez recharger la page pour démarrer une nouvelle session."
+        )
+
+    st.session_state["llm_call_count"] += 1
+
+
+# ---------------------------------------------------------------------------
+# Fonctions internes — STRICTEMENT INCHANGÉES
 # ---------------------------------------------------------------------------
 
 def _call_groq(prompt: str, system: str) -> str:
@@ -154,7 +195,7 @@ def _call_groq(prompt: str, system: str) -> str:
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.0,
-        "max_tokens": 4096,
+        "max_tokens": 8192,   # gpt-oss est un modèle à raisonnement : ces tokens comptent dans la limite
     }
     try:
         response = requests.post(
@@ -230,16 +271,21 @@ def _validate_lp_model(model: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Fonctions publiques
+# Fonctions publiques — garde-fous ajoutés en tête, reste INCHANGÉ
 # ---------------------------------------------------------------------------
 
 def extract_lp_from_text(user_text: str) -> dict:
+    _check_enonce(user_text)   # ← nouveau : limite taille énoncé
+    _check_quota()             # ← nouveau : limite appels par session
     raw = _call_groq(prompt=user_text, system=SYSTEM_PROMPT_TEXT)
     model = _extract_json(raw)
     return _validate_lp_model(model)
 
 
 def extract_lp_from_lp_format(lp_text: str) -> dict:
+    _check_enonce(lp_text)     # ← nouveau : limite taille énoncé
+    _check_quota()             # ← nouveau : limite appels par session
     raw = _call_groq(prompt=lp_text, system=SYSTEM_PROMPT_LP)
     model = _extract_json(raw)
     return _validate_lp_model(model)
+
